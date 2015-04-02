@@ -6,18 +6,9 @@
 //   By: mcanal <zboub@42.fr>                       +#+  +:+       +#+        //
 //                                                +#+#+#+#+#+   +#+           //
 //   Created: 2015/03/26 16:30:28 by mcanal            #+#    #+#             //
-//   Updated: 2015/04/01 21:32:05 by mcanal           ###   ########.fr       //
+//   Updated: 2015/04/02 18:51:30 by mcanal           ###   ########.fr       //
 //                                                                            //
 // ************************************************************************** //
-
-/*
-** "THE BEER-WARE LICENSE" (Revision 42):								oOOOOOo
-** JeanMax@github wrote this file. As long as you retain this			,|	 |
-** notice you can do whatever you want with this stuff. If we meet	//|	 |
-** some day, and you think this stuff is worth it, you can buy me	 \\|	 |
-** a beer in return.													`|	 |
-**	-JeanMax															`-----`
-*/
 
 'use strict';
 
@@ -44,6 +35,18 @@ function arrondi(nb)
 	return signe * nb;
 }
 
+function syntax(arg)
+{
+	var reg;
+	console.log(arg);
+	
+	reg = new RegExp("[^\^X0-9 \*\+\-\=]", "g");
+	if (reg.test(arg))
+		return false;
+
+	return true;
+}
+
 function fillNbTab(arg)
 {
 	var reg, i, equal, split, sign;
@@ -62,12 +65,13 @@ function fillNbTab(arg)
 			break ;
 		}
 	}
-	if (!equal)
+	if (!equal || arg.indexOf("=") != arg.lastIndexOf("=") || !syntax(arg))
 	{
 		console.log("Syntax error");
 		return false;
 	}
-
+	
+	
 	//splitting tab : 2nd step, this is the real one
 	reg = new RegExp("[+*=]", "g");
 	split = arg.split(reg);
@@ -118,7 +122,7 @@ function init()
 	//pick av
 	if (process.argv.length != 3)
 	{
-		console.log("Syntaax error");
+		console.log("Syntax error");
 		return false;
 	}
 	arg = (process.argv.slice(2)).toString();
@@ -127,8 +131,10 @@ function init()
 	//replace '- ' with '+ -'
 	reg = new RegExp("- ", "g");
 	arg = arg.replace(reg, "+ -");
-	reg = new RegExp(" ", "g");
+	reg = new RegExp("[ \s]", "g");
 	arg = arg.replace(reg, "");
+	reg = new RegExp("-", "g");
+	arg = arg.replace(reg, " -");
 
 	//init nb tab
 	nb['X^0'] = 0;
@@ -150,8 +156,8 @@ function init()
 		s = 'X^'.concat(i.toString());
 		if (arg.indexOf(s) > -1)
 		{
-			//if the power isn't real (seriously)
-			if (arg.indexOf(s.concat('.')) > -1)
+			//if the power isn't natural (seriously)
+			if (arg.indexOf(s.concat('.')) > -1 || arg.indexOf('X^ -') > -1)
 			{
 				console.log("The polynomial degree isn't natural, I can't solve.");
 				return false;
@@ -169,14 +175,16 @@ function init()
 
 function print()
 {
-	var reg, tag, i, j, s = "", zboub;
+	var reg, tag, i, j, s = "", zboub, degree;
 
 	//concat the tab in one string
 	i = 0;
+	degree = 'X^0';
 	for (tag in nb)
 	{
 		if (nb[tag].toFixed(6) != 0)
 		{
+			degree = tag;
 			if (i != 0)
 				s = s.concat(" + ");
 			s = s.concat(arrondi(nb[tag].toFixed(6)).toString());
@@ -195,9 +203,10 @@ function print()
 	}
 	if (!i)
 		s = "0"
+	else
+		i--;
 	s = s.concat(" = 0");
 	console.log("Reduced form:", s);
-	i--;
 
 	//ignore last degree(s) if multiplicator = 0
 	for (j = i; j >= 0 && i; j--)
@@ -207,7 +216,8 @@ function print()
 		else
 			break ;
 	}
-	console.log("Polynomial degree:", i);
+	i = parseInt(tag.substr(2, degree.length - 2));
+	console.log("Polynomial degree:", tag.substr(2, degree.length - 2));
 
 	//handling degree 1 and 0
 	if (i > 2)
