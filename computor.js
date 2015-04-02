@@ -6,14 +6,14 @@
 //   By: mcanal <zboub@42.fr>                       +#+  +:+       +#+        //
 //                                                +#+#+#+#+#+   +#+           //
 //   Created: 2015/03/26 16:30:28 by mcanal            #+#    #+#             //
-//   Updated: 2015/04/02 18:51:30 by mcanal           ###   ########.fr       //
+//   Updated: 2015/04/02 20:14:03 by mnguyen          ###   ########.fr       //
 //                                                                            //
 // ************************************************************************** //
 
 'use strict';
 
 var debug = 0, //debug'ing purpose : set to 1 to print vars value
-	step = 0, //set to 1 to show all processing step
+	step = 1, //set to 1 to show all processing step
 	nb = []; //global array
 
 function arrondi(nb)
@@ -38,7 +38,6 @@ function arrondi(nb)
 function syntax(arg)
 {
 	var reg;
-	console.log(arg);
 	
 	reg = new RegExp("[^\^X0-9 \*\+\-\=]", "g");
 	if (reg.test(arg))
@@ -187,10 +186,12 @@ function print()
 			degree = tag;
 			if (i != 0)
 				s = s.concat(" + ");
-			s = s.concat(arrondi(nb[tag].toFixed(6)).toString());
+			if (nb[tag].toFixed(6) != 1 || tag == 'X^0')
+				s = s.concat(arrondi(nb[tag].toFixed(6)).toString());
 			if (tag != 'X^0')
 			{
-				s = s.concat(" * ");
+				if (nb[tag].toFixed(6) != 1)
+					s = s.concat(" * ");
 				if (tag == 'X^1')
 					s = s.concat('X')
 				else
@@ -216,8 +217,9 @@ function print()
 		else
 			break ;
 	}
-	i = parseInt(tag.substr(2, degree.length - 2));
-	console.log("Polynomial degree:", tag.substr(2, degree.length - 2));
+
+	i = parseInt(degree.substr(2, degree.length - 2));
+	console.log("Polynomial degree:", degree.substr(2, degree.length - 2));
 
 	//handling degree 1 and 0
 	if (i > 2)
